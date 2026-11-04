@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Focus</title>
+  <style>
+    :root {
+      --bg-primary: #0f0f13;
+      --bg-card: #181824;
+      --bg-card-highlight: #1e1e30;
+      --bg-input: #202030;
+      --border-color: #33334d;
+      --border-highlight: #4a4a68;
+      --accent-gradient: linear-gradient(135deg, #d97706 0%, #ea580c 50%, #dc2626 100%);
+      --accent-amber: #f59e0b;
+      --accent-blue: #0a66c2;
+      --accent-purple: #a855f7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --success-green: #10b981;
+      --error-red: #ef4444;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 360px;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      padding: 16px;
+      overflow-x: hidden;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .header-text h1 {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+
+    .header-text p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Platform Sections */
+    .platform-section {
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    /* Master Toggle Card */
+    .master-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .master-card.active {
+      border-color: rgba(245, 158, 11, 0.4);
+      background: linear-gradient(180deg, rgba(24, 24, 36, 1) 0%, rgba(32, 28, 38, 0.6) 100%);
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .master-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .master-sublabel {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Toggle Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #2e2e42;
+      transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 24px;
+      border: 1px solid var(--border-color);
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #94a3b8;
+      transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      border-color: #f59e0b;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+      background-color: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    /* Sub-Settings Container (visible when master switch is ON) */
+    .sub-settings-container {
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    /* Mode Selection Card */
+    .mode-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .mode-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .section-title-small {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .mode-indicator {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .mode-indicator.productive {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .mode-indicator.non-productive {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+
+    .mode-switch-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .mode-pill {
+      background: #202030;
+      border: 1px solid #33334d;
+      border-radius: 8px;
+      padding: 10px 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+      color: var(--text-muted);
+    }
+
+    .mode-pill:hover {
+      background: #26263a;
+      border-color: var(--border-highlight);
+      color: #fff;
+    }
+
+    .mode-pill.active.productive {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: #10b981;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+    }
+
+    .mode-pill.active.non-productive {
+      background: rgba(168, 85, 247, 0.12);
+      border-color: #a855f7;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+    }
+
+    .mode-pill-icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .mode-pill-text {
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .mode-description {
+      font-size: 10.5px;
+      color: var(--text-dim);
+      line-height: 1.4;
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    /* Profile / Goal Card */
+    .profile-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .profile-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+
+    .profile-badge {
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+
+    .profile-badge.standard {
+      background: #232336;
+      color: #94a3b8;
+      border: 1px solid #38384f;
+    }
+
+    .profile-badge.custom {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .active-goal-text {
+      font-size: 12px;
+      font-weight: 500;
+      color: #f1f5f9;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .active-goal-text.empty {
+      color: var(--text-dim);
+      font-style: italic;
+      font-size: 11px;
+    }
+
+    /* Form Input */
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .text-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: #fff;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .text-input:focus {
+      border-color: var(--accent-amber);
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+    }
+
+    .text-input::placeholder {
+      color: #55556e;
+    }
+
+    /* Button Group */
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .btn {
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      border: none;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #d97706, #ea580c);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(234, 88, 12, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #b45309, #c2410c);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #232336;
+      color: #cbd5e1;
+      border: 1px solid #38384f;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #2a2a40;
+      color: #fff;
+      border-color: #4b4b66;
+    }
+
+    .btn-secondary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* LinkedIn Section */
+    .linkedin-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .toggle-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .toggle-sublabel {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .categories-header {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin: 14px 0 8px 0;
+    }
+
+    .rules-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .rule-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 10px;
+      background: #1e1e2d;
+      border: 1px solid #2d2d42;
+      border-radius: 8px;
+    }
+
+    .rule-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+
+    .rule-dot.green { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.5); }
+    .rule-dot.amber { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.5); }
+    .rule-dot.red { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
+
+    .rule-content {
+      flex: 1;
+    }
+
+    .rule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+
+    .rule-name {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .rule-badge {
+      font-size: 9.5px;
+      font-weight: 600;
+      padding: 1px 5px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .rule-badge.keep { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .rule-badge.toggle { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .rule-badge.blur { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+    .rule-desc {
+      font-size: 10.5px;
+      color: var(--text-dim);
+      line-height: 1.3;
+    }
+
+    /* Unsupported Site Card */
+    .empty-state-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px 18px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .empty-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .empty-state-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .empty-state-card p {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .domain-link {
+      color: var(--accent-amber);
+      text-decoration: underline;
+      font-weight: 600;
+    }
+
+    /* Status Banner */
+    .status-msg {
+      display: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .status-msg.success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+
+    .status-msg.info {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      color: #60a5fa;
+    }
+
+    .status-msg.error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+    }
+
+    /* Footer */
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-dim);
+      border-top: 1px solid var(--border-color);
+      padding-top: 10px;
+    }
+
+    .footer a {
+      color: var(--accent-amber);
+      text-decoration: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Dynamic Platform Header -->
+  <div class="header">
+    <div class="header-icon" id="headerIcon">🎯</div>
+    <div class="header-text">
+      <h1 id="headerTitle">YouTube AI Focus</h1>
+      <p id="headerSubtitle">Loading active tab...</p>
+    </div>
+  </div>
+
+  <!-- YOUTUBE SETTINGS SECTION (Visible only on YouTube) -->
+  <div id="youtubeSection" class="platform-section">
+    <!-- Master Switch Card -->
+    <div class="master-card active" id="ytMasterCard">
+      <div class="toggle-row">
+        <div>
+          <div class="master-label">Enable YouTube Filter</div>
+          <div class="master-sublabel" id="masterStatusText">AI classification & focus protection active</div>
+        </div>
+        <label class="switch" title="Toggle YouTube Filter Master Switch">
+          <input type="checkbox" id="ytMasterToggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- YouTube Sub-Settings (Visible ONLY when Master Switch is ON) -->
+    <div id="ytSubSettings" class="sub-settings-container">
+      <!-- Secondary Mode Toggle: Productive vs Non-Productive -->
+      <div class="mode-card">
+        <div class="mode-header">
+          <span class="section-title-small">Session Focus Mode</span>
+          <span class="mode-indicator productive" id="modeIndicatorBadge">Productive</span>
+        </div>
+        <div class="mode-switch-grid">
+          <button type="button" class="mode-pill active productive" id="btnModeProductive" data-mode="productive">
+            <span class="mode-pill-icon">🎯</span>
+            <span class="mode-pill-text">Productive Mode</span>
+          </button>
+          <button type="button" class="mode-pill" id="btnModeNonProductive" data-mode="non-productive">
+            <span class="mode-pill-icon">🍿</span>
+            <span class="mode-pill-text">Non-Productive Mode</span>
+          </button>
+        </div>
+        <div class="mode-description" id="modeDescriptionText">
+          Keeping coding, science & study tutorials. Entertainment & clickbait blurred.
+        </div>
+      </div>
+
+      <!-- Active Goal Profile Card -->
+      <div class="profile-card">
+        <div class="profile-header">
+          <span class="profile-title">Active Goal</span>
+          <span id="profileBadge" class="profile-badge standard">Standard</span>
+        </div>
+        <div id="activeGoalDisplay" class="active-goal-text empty">Standard Productivity Rules (No custom goal)</div>
+      </div>
+
+      <!-- Custom Goal Input -->
+      <div class="form-group">
+        <label class="form-label" for="goalInput">Custom Goal Topic</label>
+        <div class="input-wrapper">
+          <input
+            type="text"
+            id="goalInput"
+            class="text-input"
+            placeholder="e.g., Python, Machine Learning, Calculus..."
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button type="button" id="setGoalBtn" class="btn btn-primary">
+          <span>🎯</span> Set Goal
+        </button>
+        <button type="button" id="clearGoalBtn" class="btn btn-secondary" disabled>
+          <span>✕</span> Clear Goal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LINKEDIN SETTINGS SECTION (Visible only on LinkedIn) -->
+  <div id="linkedinSection" class="platform-section">
+    <div class="linkedin-card">
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">Show Neutral Posts</div>
+          <div class="toggle-sublabel">Keep industry news & announcements visible</div>
+        </div>
+        <label class="switch" title="Toggle Show Neutral Posts">
+          <input type="checkbox" id="linkedinShowNeutral">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="categories-header">Feed Filter Rules</div>
+      <div class="rules-list">
+        <div class="rule-item">
+          <span class="rule-dot green"></span>
+          <div class="rule-content">
+            <div class="rule-header">
+              <span class="rule-name">Productive</span>
+              <span class="rule-badge keep">Always Keep</span>
+            </div>
+            <div class="rule-desc">Hiring, jobs, technical projects, engineering, skills</div>
+          </div>
+        </div>
+        <div class="rule-item">
+          <span class="rule-dot amber"></span>
+          <div class="rule-content">
+            <div class="rule-header">
+              <span class="rule-name">Neutral</span>
+              <span class="rule-badge toggle">Toggle Controlled</span>
+            </div>
+            <div class="rule-desc">Industry news, announcements, company updates</div>
+          </div>
+        </div>
+        <div class="rule-item">
+          <span class="rule-dot red"></span>
+          <div class="rule-content">
+            <div class="rule-header">
+              <span class="rule-name">Non-Productive</span>
+              <span class="rule-badge blur">Always Blur</span>
+            </div>
+            <div class="rule-desc">Fluff, memes, politics, engagement bait, personal rants</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UNSUPPORTED DOMAIN SECTION (Visible on other sites) -->
+  <div id="unsupportedSection" class="platform-section">
+    <div class="empty-state-card">
+      <div class="empty-icon">🌐</div>
+      <h3>Not on YouTube or LinkedIn</h3>
+      <p>Navigate to <a href="https://youtube.com" target="_blank" class="domain-link">YouTube</a> or <a href="https://linkedin.com" target="_blank" class="domain-link">LinkedIn</a> to manage your active focus filter.</p>
+    </div>
+  </div>
+
+  <div id="statusMessage" class="status-msg"></div>
+
+  <div class="footer">
+    <span>Vercel Backend</span>
+    <a id="openOptionsLink">⚙️ Settings</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

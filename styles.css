@@ -1,0 +1,15 @@
+/* styles.css - Blur styling for YouTube and LinkedIn */
+
+.ai-focus-transition,
+.feed-shared-update-v2 {
+  transition: filter 0.4s ease-in-out, opacity 0.4s ease-in-out !important;
+}
+
+.ai-focus-blurred {
+  filter: blur(15px) !important;
+  opacity: 0.4 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  cursor: default !important;
+  transition: filter 0.4s ease-in-out, opacity 0.4s ease-in-out !important;
+}
